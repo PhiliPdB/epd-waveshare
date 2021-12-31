@@ -160,7 +160,7 @@ where
         _delay: &mut DELAY,
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
-        self.send_buffer_helper(spi, buffer)?;
+        self.send_buffer_inverted(spi, buffer)?;
 
         // Clear chromatic layer since we won't be using it here
         self.interface.cmd(spi, Command::DataStartTransmission2)?;
@@ -193,7 +193,7 @@ where
         self.send_data(spi, &[(height & 0xff) as u8])?;
         self.wait_until_idle();
 
-        self.send_buffer_helper(spi, buffer)?;
+        self.send_buffer_inverted(spi, buffer)?;
 
         self.interface.cmd(spi, Command::DataStop)
     }
@@ -297,7 +297,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
 
-        self.send_buffer_helper(spi, achromatic)?;
+        self.interface.data(spi, achromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)
     }
@@ -312,7 +312,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission2)?;
 
-        self.send_buffer_helper(spi, chromatic)?;
+        self.send_buffer_inverted(spi, chromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)?;
         self.wait_until_idle();
@@ -338,7 +338,7 @@ where
         self.interface.data(spi, data)
     }
 
-    fn send_buffer_helper(&mut self, spi: &mut SPI, buffer: &[u8]) -> Result<(), SPI::Error> {
+    fn send_buffer_inverted(&mut self, spi: &mut SPI, buffer: &[u8]) -> Result<(), SPI::Error> {
         // Based on the waveshare implementation, all data for color values is flipped. This helper
         // method makes that transmission easier
         for b in buffer.iter() {
