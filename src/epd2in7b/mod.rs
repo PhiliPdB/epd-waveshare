@@ -21,10 +21,10 @@ pub const WIDTH: u32 = 176;
 /// Height of the display
 pub const HEIGHT: u32 = 264;
 /// Default Background Color
-pub const DEFAULT_BACKGROUND_COLOR: Color = Color::White;
+pub const DEFAULT_BACKGROUND_COLOR: TriColor = TriColor::White;
 const IS_BUSY_LOW: bool = true;
 
-use crate::color::Color;
+use crate::color::TriColor;
 
 pub(crate) mod command;
 use self::command::Command;
@@ -39,7 +39,7 @@ pub struct Epd2in7b<SPI, CS, BUSY, DC, RST, DELAY> {
     /// Connection Interface
     interface: DisplayInterface<SPI, CS, BUSY, DC, RST, DELAY>,
     /// Background Color
-    color: Color,
+    color: TriColor,
 }
 
 impl<SPI, CS, BUSY, DC, RST, DELAY> InternalWiAdditions<SPI, CS, BUSY, DC, RST, DELAY>
@@ -118,7 +118,7 @@ where
     RST: OutputPin,
     DELAY: DelayMs<u8>,
 {
-    type DisplayColor = Color;
+    type DisplayColor = TriColor;
     fn new(
         spi: &mut SPI,
         cs: CS,
@@ -218,7 +218,7 @@ where
     fn clear_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
         self.wait_until_idle();
 
-        let color_value = self.color.get_byte_value();
+        let color_value = !self.color.get_byte_value();
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
         self.interface
             .data_x_times(spi, color_value, WIDTH * HEIGHT / 8)?;
@@ -232,11 +232,11 @@ where
         Ok(())
     }
 
-    fn set_background_color(&mut self, color: Color) {
+    fn set_background_color(&mut self, color: TriColor) {
         self.color = color;
     }
 
-    fn background_color(&self) -> &Color {
+    fn background_color(&self) -> &TriColor {
         &self.color
     }
 
@@ -297,7 +297,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
 
-        self.interface.data(spi, achromatic)?;
+        self.send_buffer_helper(spi, achromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)
     }
@@ -312,7 +312,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission2)?;
 
-        self.interface.data(spi, chromatic)?;
+        self.send_buffer_helper(spi, chromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)?;
         self.wait_until_idle();
@@ -342,7 +342,7 @@ where
         // Based on the waveshare implementation, all data for color values is flipped. This helper
         // method makes that transmission easier
         for b in buffer.iter() {
-            self.send_data(spi, &[*b])?;
+            self.send_data(spi, &[!b])?;
         }
         Ok(())
     }
@@ -451,6 +451,6 @@ mod tests {
     fn epd_size() {
         assert_eq!(WIDTH, 176);
         assert_eq!(HEIGHT, 264);
-        assert_eq!(DEFAULT_BACKGROUND_COLOR, Color::White);
+        assert_eq!(DEFAULT_BACKGROUND_COLOR, TriColor::White);
     }
 }
