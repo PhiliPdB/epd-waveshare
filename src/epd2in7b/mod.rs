@@ -297,7 +297,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
 
-        self.send_buffer_helper(spi, achromatic)?;
+        self.interface.data(spi, achromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)
     }
@@ -312,7 +312,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.cmd(spi, Command::DataStartTransmission2)?;
 
-        self.send_buffer_helper(spi, chromatic)?;
+        self.interface.data(spi, chromatic)?;
 
         self.interface.cmd(spi, Command::DataStop)?;
         self.wait_until_idle();
@@ -342,7 +342,7 @@ where
         // Based on the waveshare implementation, all data for color values is flipped. This helper
         // method makes that transmission easier
         for b in buffer.iter() {
-            self.send_data(spi, &[!b])?;
+            self.send_data(spi, &[*b])?;
         }
         Ok(())
     }
