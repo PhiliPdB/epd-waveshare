@@ -218,7 +218,7 @@ where
     fn clear_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
         self.wait_until_idle();
 
-        let color_value = !self.color.get_byte_value();
+        let color_value = self.color.get_byte_value();
         self.interface.cmd(spi, Command::DataStartTransmission1)?;
         self.interface
             .data_x_times(spi, color_value, WIDTH * HEIGHT / 8)?;
@@ -227,7 +227,7 @@ where
 
         self.interface.cmd(spi, Command::DataStartTransmission2)?;
         self.interface
-            .data_x_times(spi, color_value, WIDTH * HEIGHT / 8)?;
+            .data_x_times(spi, !color_value, WIDTH * HEIGHT / 8)?;
         self.interface.cmd(spi, Command::DataStop)?;
         Ok(())
     }
