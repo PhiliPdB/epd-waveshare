@@ -250,8 +250,37 @@ impl TriColor {
 
 #[cfg(feature = "graphics")]
 impl PixelColor for TriColor {
-    type Raw = ();
+    type Raw = embedded_graphics_core::pixelcolor::raw::RawU2;
 }
+
+#[cfg(feature = "graphics")]
+impl From<embedded_graphics_core::pixelcolor::raw::RawU2> for TriColor {
+    fn from(raw: embedded_graphics_core::pixelcolor::raw::RawU2) -> Self {
+        use embedded_graphics_core::prelude::RawData;
+
+        match raw.into_inner() & 0x03 {
+            0b00 => TriColor::Black,
+            0b01 => TriColor::Chromatic,
+            // A white byte is still 0xff this way
+            0b11 => TriColor::White,
+            e => panic!("{}", OutOfColorRangeParseError(e)),
+        }
+    }
+}
+
+#[cfg(feature = "graphics")]
+impl From<TriColor> for embedded_graphics_core::pixelcolor::raw::RawU2 {
+    fn from(c: TriColor) -> Self {
+        use embedded_graphics_core::pixelcolor::raw::RawU2;
+
+        match c {
+            TriColor::Black => RawU2::new(0b00),
+            TriColor::White => RawU2::new(0b11),
+            TriColor::Chromatic => RawU2::new(0b01),
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
