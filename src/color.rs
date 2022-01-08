@@ -250,12 +250,12 @@ impl TriColor {
 
 #[cfg(feature = "graphics")]
 impl PixelColor for TriColor {
-    type Raw = embedded_graphics_core::pixelcolor::raw::RawU2;
+    type Raw = embedded_graphics_core::pixelcolor::raw::RawU8;
 }
 
 #[cfg(feature = "graphics")]
-impl From<embedded_graphics_core::pixelcolor::raw::RawU2> for TriColor {
-    fn from(raw: embedded_graphics_core::pixelcolor::raw::RawU2) -> Self {
+impl From<embedded_graphics_core::pixelcolor::raw::RawU8> for TriColor {
+    fn from(raw: embedded_graphics_core::pixelcolor::raw::RawU8) -> Self {
         use embedded_graphics_core::prelude::RawData;
 
         match raw.into_inner() & 0x03 {
@@ -269,14 +269,14 @@ impl From<embedded_graphics_core::pixelcolor::raw::RawU2> for TriColor {
 }
 
 #[cfg(feature = "graphics")]
-impl From<TriColor> for embedded_graphics_core::pixelcolor::raw::RawU2 {
+impl From<TriColor> for embedded_graphics_core::pixelcolor::raw::RawU8 {
     fn from(c: TriColor) -> Self {
-        use embedded_graphics_core::pixelcolor::raw::RawU2;
+        use embedded_graphics_core::pixelcolor::raw::RawU8;
 
         match c {
-            TriColor::Black => RawU2::new(0b00),
-            TriColor::White => RawU2::new(0b11),
-            TriColor::Chromatic => RawU2::new(0b01),
+            TriColor::Black => RawU8::new(0x00),
+            TriColor::White => RawU8::new(0xff),
+            TriColor::Chromatic => RawU8::new(0x01),
         }
     }
 }
